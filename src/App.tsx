@@ -15,6 +15,7 @@ import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { PngExport } from './components/PngExport';
 import { PrivacyPage } from './components/PrivacyPage';
+import { SvgIconSearch } from './components/SvgIconSearch';
 
 const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
   <defs>
@@ -51,10 +52,10 @@ export default function App() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [history, setHistory] = useState<string[]>([savedSvg]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [iconSearchOpen, setIconSearchOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isOnline } = useOfflineSync();
 
-  // Apply dark mode class to <html> on mount + changes
   useEffect(() => {
     const root = document.documentElement;
     if (darkMode) {
@@ -64,7 +65,6 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Also apply on initial load (in case localStorage has it set)
   useEffect(() => {
     try {
       const stored = localStorage.getItem('svg-dark-mode');
@@ -73,9 +73,11 @@ export default function App() {
         if (isDark) {
           document.documentElement.classList.add('dark');
         }
+      } else {
+        document.documentElement.classList.add('dark');
       }
     } catch {
-      // ignore
+      document.documentElement.classList.add('dark');
     }
   }, []);
 
@@ -103,9 +105,7 @@ export default function App() {
   );
 
   const handleCodeChange = useCallback(
-    (code: string) => {
-      pushHistory(code);
-    },
+    (code: string) => { pushHistory(code); },
     [pushHistory]
   );
 
@@ -169,7 +169,30 @@ export default function App() {
     addToast('success', 'SVG downloaded');
   }, [svgCode, addToast]);
 
-  // Keyboard shortcuts
+  const handleInsertIcon = useCallback(
+    (iconSvg: string) => {
+      // Insert the icon SVG into the editor
+      if (svgCode.trim()) {
+        // Append to existing SVG
+        const closingTag = '</svg>';
+        const closingIndex = svgCode.lastIndexOf(closingTag);
+        if (closingIndex !== -1) {
+          const before = svgCode.substring(0, closingIndex);
+          const wrappedIcon = `\n  <!-- Inserted icon -->\n  <g transform="translate(20, 20)" width="64" height="64">\n    ${iconSvg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '')}\n  </g>\n`;
+          pushHistory(before + wrappedIcon + closingTag);
+        } else {
+          pushHistory(iconSvg);
+        }
+      } else {
+        pushHistory(iconSvg);
+      }
+      setIconSearchOpen(false);
+      setMode('editor');
+      addToast('success', 'Icon inserted into editor');
+    },
+    [svgCode, pushHistory, addToast]
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey;
@@ -185,13 +208,15 @@ export default function App() {
       } else if (mod && e.shiftKey && e.key === 'K') {
         e.preventDefault();
         handleClear();
+      } else if (mod && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        setIconSearchOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDownload, handleUndo, handleRedo, handleClear]);
 
-  // Privacy page
   if (page === 'privacy') {
     return <PrivacyPage onBack={() => setPage('editor')} />;
   }
@@ -200,6 +225,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-gray-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100">
       <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode((prev) => !prev)} />
       <ModeToggle currentMode={mode} onModeChange={setMode} />
+
       <Toolbar
         onUndo={handleUndo}
         onRedo={handleRedo}
@@ -208,6 +234,7 @@ export default function App() {
         onOptimize={handleOptimize}
         onUpload={handleUpload}
         onDownload={handleDownload}
+        onIconSearch={() => setIconSearchOpen(true)}
         canUndo={historyIndex > 0}
         canRedo={historyIndex < history.length - 1}
       />
@@ -221,10 +248,7 @@ export default function App() {
             onZoomChange={setZoom}
             rotation={rotation}
             onRotationChange={setRotation}
-            onReset={() => {
-              setZoom(100);
-              setRotation(0);
-            }}
+            onReset={() => { setZoom(100); setRotation(0); }}
             onFileUpload={handleFileSelect}
           />
         )}
@@ -234,7 +258,6 @@ export default function App() {
         )}
         {mode === 'code' && <CodeMode svgCode={svgCode} addToast={addToast} />}
 
-        {/* PNG Export Bar — visible below main content */}
         <div className="mt-4 flex items-center justify-between p-3 bg-white/60 dark:bg-gray-900/60 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <span className="text-base">🖼</span>
@@ -249,7 +272,14 @@ export default function App() {
 
       <input ref={fileInputRef} type="file" accept=".svg,image/svg+xml" onChange={handleFileSelect} className="hidden" />
 
-      <div className="fixed bottom-16 right-4 flex flex-col gap-2 z-50 pointer-events-none">
+      <SvgIconSearch
+        isOpen={iconSearchOpen}
+        onClose={() => setIconSearchOpen(false)}
+        onInsertSvg={handleInsertIcon}
+        addToast={addToast}
+      />
+
+      <div className="fixed bottom-16 right-4 flex flex-col gap-2 z-[60] pointer-events-none">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">
             <Toast toast={toast} onDismiss={removeToast} />

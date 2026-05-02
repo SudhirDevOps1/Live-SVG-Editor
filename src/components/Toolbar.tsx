@@ -6,6 +6,7 @@ interface ToolbarProps {
   onOptimize: () => void;
   onUpload: () => void;
   onDownload: () => void;
+  onIconSearch?: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }
@@ -18,6 +19,7 @@ export function Toolbar({
   onOptimize,
   onUpload,
   onDownload,
+  onIconSearch,
   canUndo,
   canRedo,
 }: ToolbarProps) {
@@ -70,6 +72,19 @@ export function Toolbar({
       >
         ⚡ Optimize
       </button>
+
+      {onIconSearch && (
+        <>
+          <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 mx-1" />
+          <button
+            onClick={onIconSearch}
+            className="px-2.5 py-1.5 text-xs rounded-lg bg-gradient-to-r from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40 hover:from-pink-200 hover:to-rose-200 dark:hover:from-pink-900 dark:hover:to-rose-900 transition-colors text-pink-700 dark:text-pink-300 font-medium border border-pink-200 dark:border-pink-800"
+            title="Search 150,000+ SVG icons (Ctrl+Shift+I)"
+          >
+            🔍 Icons
+          </button>
+        </>
+      )}
 
       <div className="flex-1" />
 

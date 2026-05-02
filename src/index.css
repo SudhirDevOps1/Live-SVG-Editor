@@ -15,15 +15,10 @@
   --color-indigo-900: #312e81;
 }
 
+/* Animations */
 @keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .animate-slide-in {
@@ -39,89 +34,10 @@
   animation: fade-in 0.35s ease-out;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* =====================
-   VS Code+ Syntax Colors
-   ===================== */
-/* Tags */
-.syn-tag { color: #569cd6; }
-/* Attribute names */
-.syn-attr-name { color: #9cdcfe; }
-/* Attribute values / strings */
-.syn-attr-value { color: #ce9178; }
-.syn-string { color: #ce9178; }
-/* Comments */
-.syn-comment { color: #6a9955; font-style: italic; }
-/* Brackets */
-.syn-bracket { color: #808080; }
-/* Keywords in JSX */
-.syn-keyword { color: #569cd6; font-weight: 500; }
-/* Numbers */
-.syn-number { color: #b5cea8; }
-/* Entities */
-.syn-entity { color: #d7ba7d; }
-/* Function calls */
-.syn-function { color: #dcdcaa; }
-/* Variables / identifiers */
-.syn-variable { color: #4fc1ff; }
-/* Properties */
-.syn-property { color: #9cdcfe; }
-/* Operators */
-.syn-operator { color: #d4d4d4; }
-/* Punctuation */
-.syn-punctuation { color: #ffd700; }
-/* JSX components (capitalized tags) */
-.syn-component { color: #4ec9b0; font-weight: 500; }
-/* JSX text content */
-.syn-text-content { color: #d4d4d4; }
-/* Imports */
-.syn-import { color: #c586c0; font-weight: 500; }
-/* Default export */
-.syn-default-keyword { color: #569cd6; font-weight: 500; }
-/* React */
-.syn-react-keyword { color: #4ec9b0; }
-/* Types */
-.syn-type { color: #4ec9b0; }
-/* Template strings */
-.syn-template { color: #ce9178; }
-/* Regex */
-.syn-regex { color: #d16969; }
-/* Constants */
-.syn-constant { color: #4fc1ff; }
-/* Decorators */
-.syn-decorator { color: #dcdcaa; }
-
-/* =====================
-   Code editor background
-   ===================== */
-.code-editor-bg {
-  background-color: #1e1e1e;
-}
-
-/* =====================
-   Line numbers
-   ===================== */
-.code-line-number {
-  color: #858585;
-  text-align: right;
-  user-select: none;
-  min-width: 2.5rem;
-}
-
-/* =====================
-   Custom scrollbar
-   ===================== */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -129,12 +45,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
-  border-radius: 4px;
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(156, 163, 175, 0.6);
 }
 
 .dark ::-webkit-scrollbar-thumb {
@@ -145,27 +61,115 @@
   background: rgba(75, 85, 99, 0.7);
 }
 
-/* =====================
-   Textarea styles
-   ===================== */
 textarea {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.4) transparent;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
 }
 
 .dark textarea {
   scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
 }
 
-/* =====================
-   Range input styling
-   ===================== */
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ================================================================
+   VS Code Dark+ Theme — Syntax Highlighting Colors
+   ================================================================ */
+
+/* Tag types */
+.syn-tag {
+  color: #569cd6;
+  font-weight: 600;
+}
+
+.syn-shape-tag {
+  color: #c586c0;
+  font-weight: 600;
+}
+
+.syn-container-tag {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+.syn-gradient-tag {
+  color: #dcdcaa;
+  font-weight: 600;
+}
+
+.syn-text-tag {
+  color: #9cdcfe;
+  font-weight: 600;
+}
+
+/* Attributes */
+.syn-attr-name {
+  color: #92d3f5;
+}
+
+.syn-attr-svg {
+  color: #9cdcfe;
+  font-weight: 500;
+}
+
+.syn-attr-value {
+  color: #ce9178;
+}
+
+/* Values */
+.syn-string {
+  color: #ce9178;
+}
+
+.syn-number {
+  color: #b5cea8;
+}
+
+.syn-entity {
+  color: #d7ba7d;
+}
+
+.syn-color {
+  color: #569cd6;
+  font-style: italic;
+}
+
+/* Comments */
+.syn-comment {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* Structural */
+.syn-bracket {
+  color: #808080;
+}
+
+.syn-keyword {
+  color: #569cd6;
+}
+
+.syn-text-content {
+  color: #d4d4d4;
+}
+
+/* Range inputs */
 input[type="range"] {
-  height: 5px;
-  border-radius: 3px;
-  background: rgba(156, 163, 175, 0.25);
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(156, 163, 175, 0.3);
   outline: none;
-  cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -175,13 +179,8 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #6366f1;
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .dark input[type="range"]::-webkit-slider-thumb {
@@ -194,13 +193,11 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: #6366f1;
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* =====================
-   Select dropdown
-   ===================== */
+/* Select dropdown */
 select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -211,19 +208,4 @@ select {
 
 .dark select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-}
-
-/* =====================
-   Glassmorphism
-   ===================== */
-.glass {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass {
-  background: rgba(17, 24, 39, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }

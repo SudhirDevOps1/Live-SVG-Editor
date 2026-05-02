@@ -1,5 +1,5 @@
 export type Mode = 'editor' | 'draw' | 'customize' | 'code';
-export type DrawTool = 'select' | 'rect' | 'circle' | 'ellipse' | 'line' | 'path' | 'text';
+export type DrawTool = 'select' | 'rect' | 'circle' | 'ellipse' | 'line' | 'path' | 'text' | 'star' | 'polygon' | 'arrow' | 'diamond';
 export type CodeLanguage = 'react' | 'react-native' | 'html';
 
 export interface DrawElement {

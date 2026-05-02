@@ -3,6 +3,7 @@ import type { Mode, ToastMessage } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useOfflineSync } from './hooks/useOfflineSync';
 import { optimizeSvg } from './utils/svgOptimizer';
+import { formatSvgCode } from './utils/svgFormatter';
 import { downloadSvg } from './utils/exportHelpers';
 import { Header } from './components/Header';
 import { Toolbar } from './components/Toolbar';
@@ -17,40 +18,74 @@ import { PngExport } from './components/PngExport';
 import { PrivacyPage } from './components/PrivacyPage';
 import { SvgIconSearch } from './components/SvgIconSearch';
 
-const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+const SAMPLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.15" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.15" />
-    </linearGradient>
-    <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1" />
-      <stop offset="100%" style="stop-color:#8b5cf6" />
-    </linearGradient>
+    <filter id="paperNoise" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="5" stitchTiles="stitch" result="turbulence"/>
+      <feComponentTransfer in="turbulence" result="fadedNoise">
+        <feFuncR type="linear" slope="0.04" intercept="0.96"/>
+        <feFuncG type="linear" slope="0.04" intercept="0.955"/>
+        <feFuncB type="linear" slope="0.04" intercept="0.94"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="fadedNoise" mode="multiply"/>
+    </filter>
+    <filter id="inkShadow" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="1" dy="2" stdDeviation="0.5" flood-color="#555" flood-opacity="0.12"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="65%">
+      <stop offset="50%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#5C4A3A" stop-opacity="0.04"/>
+    </radialGradient>
   </defs>
-  <rect x="10" y="10" width="380" height="280" rx="20" fill="url(#bgGrad)" stroke="#6366f1" stroke-width="1" />
-  <circle cx="120" cy="110" r="50" fill="url(#circleGrad)" opacity="0.9" />
-  <circle cx="200" cy="110" r="50" fill="url(#circleGrad)" opacity="0.7" />
-  <circle cx="280" cy="110" r="50" fill="url(#circleGrad)" opacity="0.5" />
-  <rect x="140" y="170" width="120" height="70" rx="12" fill="#6366f1" />
-  <text x="200" y="212" text-anchor="middle" fill="white" font-size="22" font-family="system-ui, sans-serif" font-weight="bold">SVG Editor</text>
-  <path d="M40 260 Q100 240 160 260 Q220 280 280 260 Q340 240 370 260" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" />
-  <circle cx="40" cy="260" r="4" fill="#a78bfa" />
-  <circle cx="370" cy="260" r="4" fill="#a78bfa" />
+  <rect width="1080" height="1080" fill="#FFFDF6"/>
+  <rect width="1080" height="1080" filter="url(#paperNoise)"/>
+  <rect width="1080" height="1080" fill="url(#vignette)"/>
+  <text x="130" y="260" font-family="system-ui, sans-serif" font-size="250" fill="#e74c3c" opacity="0.10" transform="rotate(-4 130 260)">&#8220;</text>
+  <text x="860" y="770" font-family="system-ui, sans-serif" font-size="250" fill="#e74c3c" opacity="0.10" transform="rotate(3 860 770)">&#8221;</text>
+  <line x1="65" y1="65" x2="140" y2="65" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="65" y1="65" x2="65" y2="140" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="1015" y1="65" x2="940" y2="65" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="1015" y1="65" x2="1015" y2="140" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="65" y1="1015" x2="140" y2="1015" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="65" y1="1015" x2="65" y2="940" stroke="#3498db" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="1015" y1="1015" x2="940" y2="1015" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="1015" y1="1015" x2="1015" y2="940" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" opacity="0.35"/>
+  <line x1="370" y1="748" x2="710" y2="748" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="12 8" opacity="0.18"/>
+  <text x="540" y="300" font-family="system-ui, sans-serif" font-weight="700" font-size="92" text-anchor="middle" transform="rotate(-1.3 540 300)" filter="url(#inkShadow)">
+    <tspan fill="#e74c3c">I don't care</tspan>
+  </text>
+  <text x="540" y="425" font-family="system-ui, sans-serif" font-weight="400" font-size="78" text-anchor="middle" transform="rotate(0.7 540 425)" filter="url(#inkShadow)">
+    <tspan fill="#444">you are </tspan>
+    <tspan fill="#3498db" font-weight="700">good</tspan>
+    <tspan fill="#444"> or </tspan>
+    <tspan fill="#3498db" font-weight="700">bad</tspan>
+  </text>
+  <text x="540" y="548" font-family="system-ui, sans-serif" font-weight="400" font-size="80" text-anchor="middle" transform="rotate(-0.5 540 548)" filter="url(#inkShadow)">
+    <tspan fill="#444">if you </tspan>
+    <tspan fill="#2ecc71" font-weight="700">respect</tspan>
+    <tspan fill="#444"> me,</tspan>
+  </text>
+  <text x="540" y="670" font-family="system-ui, sans-serif" font-weight="400" font-size="80" text-anchor="middle" transform="rotate(1.1 540 670)" filter="url(#inkShadow)">
+    <tspan fill="#444">I will </tspan>
+    <tspan fill="#2ecc71" font-weight="700">respect</tspan>
+    <tspan fill="#444"> you ...</tspan>
+  </text>
+  <text x="540" y="840" font-family="system-ui, sans-serif" font-size="38" fill="#aaa" text-anchor="middle" font-style="italic" opacity="0.7">— wise words</text>
+  <circle cx="440" cy="835" r="3" fill="#e74c3c" opacity="0.25"/>
+  <circle cx="640" cy="835" r="3" fill="#2ecc71" opacity="0.25"/>
 </svg>`;
 
 type Page = 'editor' | 'privacy';
 
 export default function App() {
   const [darkMode, setDarkMode] = useLocalStorage('svg-dark-mode', true);
-  const [savedSvg] = useLocalStorage('svg-saved', SAMPLE_SVG);
   const [page, setPage] = useState<Page>('editor');
   const [mode, setMode] = useState<Mode>('editor');
-  const [svgCode, setSvgCode] = useState(savedSvg);
+  const [svgCode, setSvgCode] = useState(SAMPLE_SVG);
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [history, setHistory] = useState<string[]>([savedSvg]);
+  const [history, setHistory] = useState<string[]>([SAMPLE_SVG]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [iconSearchOpen, setIconSearchOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,7 +185,8 @@ export default function App() {
         const reader = new FileReader();
         reader.onload = (event) => {
           const content = event.target?.result as string;
-          pushHistory(content);
+          const formatted = formatSvgCode(content);
+          pushHistory(formatted);
           addToast('success', `Loaded: ${file.name}`);
         };
         reader.readAsText(file);
@@ -169,28 +205,26 @@ export default function App() {
     addToast('success', 'SVG downloaded');
   }, [svgCode, addToast]);
 
+  const handleFormatCode = useCallback(() => {
+    const formatted = formatSvgCode(svgCode);
+    if (formatted !== svgCode) {
+      pushHistory(formatted);
+      addToast('success', 'Code formatted');
+    } else {
+      addToast('info', 'Code already formatted');
+    }
+  }, [svgCode, pushHistory, addToast]);
+
   const handleInsertIcon = useCallback(
     (iconSvg: string) => {
-      // Insert the icon SVG into the editor
-      if (svgCode.trim()) {
-        // Append to existing SVG
-        const closingTag = '</svg>';
-        const closingIndex = svgCode.lastIndexOf(closingTag);
-        if (closingIndex !== -1) {
-          const before = svgCode.substring(0, closingIndex);
-          const wrappedIcon = `\n  <!-- Inserted icon -->\n  <g transform="translate(20, 20)" width="64" height="64">\n    ${iconSvg.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '')}\n  </g>\n`;
-          pushHistory(before + wrappedIcon + closingTag);
-        } else {
-          pushHistory(iconSvg);
-        }
-      } else {
-        pushHistory(iconSvg);
-      }
+      // Format and replace current SVG with icon
+      const formatted = formatSvgCode(iconSvg);
+      pushHistory(formatted);
       setIconSearchOpen(false);
       setMode('editor');
       addToast('success', 'Icon inserted into editor');
     },
-    [svgCode, pushHistory, addToast]
+    [pushHistory, addToast]
   );
 
   useEffect(() => {
@@ -211,11 +245,14 @@ export default function App() {
       } else if (mod && e.shiftKey && e.key === 'I') {
         e.preventDefault();
         setIconSearchOpen((prev) => !prev);
+      } else if (mod && e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+        e.preventDefault();
+        handleFormatCode();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDownload, handleUndo, handleRedo, handleClear]);
+  }, [handleDownload, handleUndo, handleRedo, handleClear, handleFormatCode]);
 
   if (page === 'privacy') {
     return <PrivacyPage onBack={() => setPage('editor')} />;
@@ -244,6 +281,7 @@ export default function App() {
           <EditorMode
             svgCode={svgCode}
             onCodeChange={handleCodeChange}
+            onFormatCode={handleFormatCode}
             zoom={zoom}
             onZoomChange={setZoom}
             rotation={rotation}

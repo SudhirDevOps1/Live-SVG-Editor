@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://svg-editor.privmitlab.com/sitemap.xml

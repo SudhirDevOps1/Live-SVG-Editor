@@ -33,8 +33,10 @@ The Live SVG Editor is built with privacy as a fundamental right, not a feature.
 | Device information | ❌ No | No fingerprinting |
 | Location data | ❌ No | No geolocation requests |
 | SVG content | ❌ No | Never transmitted anywhere |
-| Search queries | ❌ No | Icon search queries go to public APIs, not our servers |
+| Search queries | ⚠️ Sent to public APIs | Icon search queries go to Iconify/theSVG APIs when you search |
 | Payment information | ❌ No | No payments; app is free |
+
+> **Honest note:** While we collect zero data ourselves, icon search queries and Google Font requests do reach external servers. We disclose this transparently below.
 
 ### What We Store Locally
 

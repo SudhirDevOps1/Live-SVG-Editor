@@ -47,6 +47,50 @@ function genDiamondPts(cx: number, cy: number, w: number, h: number): string {
   return `${cx},${cy - h / 2} ${cx + w / 2},${cy} ${cx},${cy + h / 2} ${cx - w / 2},${cy}`;
 }
 
+/**
+ * Convert raw mouse points into a smooth SVG path using quadratic bezier curves.
+ * Midpoints become control points for smooth curves through actual points.
+ */
+function pointsToSmoothPath(pts: { x: number; y: number }[]): string {
+  if (pts.length === 0) return '';
+  if (pts.length === 1) return `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  if (pts.length === 2) {
+    return `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
+  }
+
+  // Simplify: skip points that are very close to each other (within 2px)
+  const simplified: { x: number; y: number }[] = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const prev = simplified[simplified.length - 1];
+    const dx = pts[i].x - prev.x;
+    const dy = pts[i].y - prev.y;
+    if (dx * dx + dy * dy > 4) {
+      simplified.push(pts[i]);
+    }
+  }
+  if (simplified.length < 2) {
+    return `M${simplified[0].x.toFixed(1)} ${simplified[0].y.toFixed(1)}`;
+  }
+
+  let d = `M${simplified[0].x.toFixed(1)} ${simplified[0].y.toFixed(1)}`;
+
+  for (let i = 1; i < simplified.length - 1; i++) {
+    const curr = simplified[i];
+    const next = simplified[i + 1];
+    // Midpoint between current and next becomes the end of the curve segment
+    const midX = (curr.x + next.x) / 2;
+    const midY = (curr.y + next.y) / 2;
+    // Current point becomes the control point
+    d += ` Q${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
+  }
+
+  // Last point: straight line to the end
+  const last = simplified[simplified.length - 1];
+  d += ` L${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+
+  return d;
+}
+
 export function DrawMode({ onExport, addToast }: DrawModeProps) {
   const [elements, setElements] = useState<DrawElement[]>([]);
   const [tool, setTool] = useState<DrawTool>('rect');
@@ -228,7 +272,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
     if (isResizing) { setIsResizing(false); setResizeStart(null); setResizeHandle(''); return; }
 
     if (isDrawing && tool === 'path' && pathPoints.length > 2) {
-      const pd = pathPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+      const pd = pointsToSmoothPath(pathPoints);
       const id = `path-${Date.now()}`;
       updateElements((prev) => [...prev, { id, type: 'path', x: 0, y: 0, width: 0, height: 0, fill: 'none', stroke: strokeColor, strokeWidth, opacity: 1, rotation: 0, pathData: pd }]);
       setSelectedId(id);
@@ -435,7 +479,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
             onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onDoubleClick={handleDoubleClick}
             onMouseLeave={() => {
               if (isDrawing && tool === 'path' && pathPoints.length > 2) {
-                const pd = pathPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+                const pd = pointsToSmoothPath(pathPoints);
                 const id = `path-${Date.now()}`;
                 updateElements((p) => [...p, { id, type: 'path', x: 0, y: 0, width: 0, height: 0, fill: 'none', stroke: strokeColor, strokeWidth, opacity: 1, rotation: 0, pathData: pd }]);
                 setSelectedId(id);
@@ -452,7 +496,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
             <rect width={canvasW} height={canvasH} fill="url(#grid)" className="dark:hidden" />
             <rect width={canvasW} height={canvasH} fill="url(#grid-dark)" className="hidden dark:block" />
             {isDrawing && tool === 'path' && pathPoints.length > 1 && (
-              <path d={pathPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} opacity="0.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={pointsToSmoothPath(pathPoints)} fill="none" stroke={strokeColor} strokeWidth={strokeWidth} opacity="0.7" strokeLinecap="round" strokeLinejoin="round" />
             )}
             {elements.map(renderElement)}
             {selectedElement && selectedElement.type !== 'path' && (() => {

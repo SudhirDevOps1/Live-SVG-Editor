@@ -16,6 +16,7 @@ export interface DrawElement {
   rotation: number;
   text?: string;
   fontSize?: number;
+  fontFamily?: string;
   pathData?: string;
   x2?: number;
   y2?: number;

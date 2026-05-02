@@ -88,7 +88,7 @@ export function EditorMode({
   onFileUpload,
 }: EditorModeProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [bgKey, setBgKey] = useState('checker');
+  const [bgKey, setBgKey] = useState('blueprint');
   const [showBgPicker, setShowBgPicker] = useState(false);
 
   return (

@@ -3,6 +3,7 @@
 
 const CACHE_NAME = 'svg-editor-v3';
 const ICON_CACHE = 'svg-editor-icons-v1';
+const FONT_CACHE = 'svg-editor-fonts-v1';
 const STATIC_ASSETS = ['/'];
 
 // Install event — cache core static assets
@@ -21,7 +22,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== ICON_CACHE)
+          .filter((name) => name !== CACHE_NAME && name !== ICON_CACHE && name !== FONT_CACHE)
           .map((name) => caches.delete(name))
       );
     })
@@ -36,6 +37,14 @@ function isIconRequest(url) {
     url.hostname === 'thesvg.org' ||
     url.hostname === 'cdn.simpleicons.org' ||
     url.hostname === 'yesicon.app'
+  );
+}
+
+// Check if a request is for Google Fonts
+function isFontRequest(url) {
+  return (
+    url.hostname === 'fonts.googleapis.com' ||
+    url.hostname === 'fonts.gstatic.com'
   );
 }
 
@@ -60,6 +69,25 @@ self.addEventListener('fetch', (event) => {
           }).catch(() => {
             return new Response('<!-- offline -->', { status: 503, headers: { 'Content-Type': 'text/plain' } });
           });
+        });
+      })
+    );
+    return;
+  }
+
+  // For Google Fonts — cache-first (fonts don't change)
+  if (isFontRequest(url)) {
+    event.respondWith(
+      caches.open(FONT_CACHE).then((cache) => {
+        return cache.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return fetch(event.request).then((response) => {
+            if (response && response.status === 200) {
+              const clone = response.clone();
+              cache.put(event.request, clone);
+            }
+            return response;
+          }).catch(() => cached || new Response('', { status: 503 }));
         });
       })
     );

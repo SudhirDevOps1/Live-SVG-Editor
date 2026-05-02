@@ -63,6 +63,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
   const [strokeColor, setStrokeColor] = useState('#1e40af');
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [fontSize, setFontSize] = useState(24);
+  const [fontFamily, setFontFamily] = useState('system-ui, sans-serif');
   const [canvasW, setCanvasW] = useState(800);
   const [canvasH, setCanvasH] = useState(600);
   const [snapToGrid, setSnapToGrid] = useState(false);
@@ -193,6 +194,8 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
       setEditingTextId(tid);
       setTextInput(el.text || '');
       setTextPosition({ x: el.x, y: el.y });
+      setFontFamily(el.fontFamily || 'system-ui, sans-serif');
+      setFontSize(el.fontSize || 24);
       setTextModalOpen(true);
       setTool('select');
     }
@@ -289,12 +292,12 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
     } else {
       // New text
       const id = `text-${Date.now()}`;
-      updateElements((prev) => [...prev, { id, type: 'text', x: textPosition.x, y: textPosition.y, width: 0, height: 0, fill, stroke: 'none', strokeWidth: 0, opacity: 1, rotation: 0, text, fontSize }]);
+      updateElements((prev) => [...prev, { id, type: 'text', x: textPosition.x, y: textPosition.y, width: 0, height: 0, fill, stroke: 'none', strokeWidth: 0, opacity: 1, rotation: 0, text, fontSize, fontFamily }]);
       setSelectedId(id);
       addToast('success', `Text added: "${text}"`);
     }
     setTextModalOpen(false); setTextInput(''); setTextPosition(null); setEditingTextId(null);
-  }, [textPosition, textInput, fill, fontSize, editingTextId, updateElements, addToast]);
+  }, [textPosition, textInput, fill, fontSize, fontFamily, editingTextId, updateElements, addToast]);
 
   const handleTextCancel = useCallback(() => { setTextModalOpen(false); setTextInput(''); setTextPosition(null); setEditingTextId(null); }, []);
 
@@ -310,7 +313,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
         case 'line': return `  <line ${b}${t} x1="${el.x.toFixed(1)}" y1="${el.y.toFixed(1)}" x2="${(el.x2 || el.x + 100).toFixed(1)}" y2="${(el.y2 || el.y + 100).toFixed(1)}"/>`;
         case 'arrow': return `  <line ${b}${t} x1="${el.x.toFixed(1)}" y1="${el.y.toFixed(1)}" x2="${(el.x2 || el.x + 100).toFixed(1)}" y2="${(el.y2 || el.y + 100).toFixed(1)}" marker-end="url(#ah)"/>`;
         case 'path': return `  <path ${b}${t} d="${el.pathData || ''}"/>`;
-        case 'text': return `  <text ${b}${t} x="${el.x.toFixed(1)}" y="${el.y.toFixed(1)}" font-size="${el.fontSize || 24}">${el.text || 'Text'}</text>`;
+        case 'text': return `  <text ${b}${t} x="${el.x.toFixed(1)}" y="${el.y.toFixed(1)}" font-size="${el.fontSize || 24}" font-family="${el.fontFamily || 'system-ui, sans-serif'}">${el.text || 'Text'}</text>`;
         case 'star': return `  <polygon ${b}${t} points="${genStarPts(el.x + el.width / 2, el.y + el.height / 2, Math.min(el.width, el.height) / 2, Math.min(el.width, el.height) / 4, starPts)}"/>`;
         case 'polygon': return `  <polygon ${b}${t} points="${genPolyPts(el.x + el.width / 2, el.y + el.height / 2, Math.min(el.width, el.height) / 2, polygonSides)}"/>`;
         case 'diamond': return `  <polygon ${b}${t} points="${genDiamondPts(el.x + el.width / 2, el.y + el.height / 2, el.width, el.height)}"/>`;
@@ -336,7 +339,7 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
       case 'line': return <line {...cp} x1={el.x} y1={el.y} x2={el.x2 || el.x + 100} y2={el.y2 || el.y + 100} strokeLinecap="round" />;
       case 'arrow': return <line {...cp} x1={el.x} y1={el.y} x2={el.x2 || el.x + 100} y2={el.y2 || el.y + 100} strokeLinecap="round" markerEnd="url(#arrowhead)" />;
       case 'path': return <path {...cp} d={el.pathData || ''} fill="none" strokeLinecap="round" strokeLinejoin="round" />;
-      case 'text': return <text {...cp} x={el.x} y={el.y} fontSize={el.fontSize || 24} fontFamily="system-ui, sans-serif" dominantBaseline="hanging" style={{ cursor: 'pointer' }}>{el.text || 'Text'}</text>;
+      case 'text': return <text {...cp} x={el.x} y={el.y} fontSize={el.fontSize || 24} fontFamily={el.fontFamily || 'system-ui, sans-serif'} dominantBaseline="hanging" style={{ cursor: 'pointer' }}>{el.text || 'Text'}</text>;
       default: return null;
     }
   };
@@ -510,10 +513,34 @@ export function DrawMode({ onExport, addToast }: DrawModeProps) {
             </p>
             <input ref={textInputRef} type="text" value={textInput} onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleTextConfirm(); if (e.key === 'Escape') handleTextCancel(); }}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="Type your text here..." />
-            <div className="flex items-center gap-3 mb-4">
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3" placeholder="Type your text here..." />
+            {textInput && (
+              <div className="px-4 py-3 mb-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700" style={{ fontFamily, fontSize: Math.min(fontSize, 28) + 'px', color: fill }}>
+                {textInput}
+              </div>
+            )}
+            <div className="flex items-center gap-3 mb-3">
               <div className="flex items-center gap-2"><label className="text-xs text-gray-500 dark:text-gray-400 font-medium">Color</label><input type="color" value={fill} onChange={(e) => setFill(e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border border-gray-300 dark:border-gray-600" /></div>
               {!editingTextId && <div className="flex items-center gap-2"><label className="text-xs text-gray-500 dark:text-gray-400 font-medium">Size</label><input type="number" value={fontSize} onChange={(e) => setFontSize(Math.max(8, Number(e.target.value)))} className="w-20 px-2.5 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900" min="8" max="200" /></div>}
+            </div>
+            <div className="mb-4">
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1.5 block">Font</label>
+              <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="system-ui, sans-serif">System Default</option>
+                <option value="'Noto Sans Devanagari', sans-serif">हिन्दी (Hindi)</option>
+                <option value="'Noto Sans', sans-serif">Noto Sans (Multi)</option>
+                <option value="'Poppins', sans-serif">Poppins</option>
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Noto Serif Devanagari', serif">हिन्दी Serif</option>
+                <option value="'Caveat', cursive">Caveat (Handwritten)</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Playfair Display', serif">Playfair Display</option>
+                <option value="monospace">Monospace</option>
+                <option value="serif">Serif</option>
+                <option value="cursive">Cursive</option>
+              </select>
             </div>
             <div className="flex gap-2">
               <button onClick={handleTextCancel} className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium text-sm transition-colors">Cancel</button>
